@@ -1,0 +1,53 @@
+{
+    "name": "asterism/actions",
+    "description": "An action-object pattern for Laravel",
+    "authors": [{
+        "name": "An Asterism",
+        "email": "hello@anasterism.com",
+        "homepage": "https://anasterism.com"
+    }],
+    "keywords": [
+        "laravel",
+        "actions"
+    ],
+    "license": "proprietary",
+    "require": {
+        "php": "^8.2",
+        "illuminate/auth": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/bus": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/collections": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/conditionable": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/contracts": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/queue": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
+        "illuminate/validation": "^9.0|^10.0|^11.0|^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^7.0|^8.0|^9.0|^10.0",
+        "phpunit/phpunit": "^9.0|^10.0|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Asterism\\Actions\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Asterism\\Actions\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Asterism\\Actions\\ActionsServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "prefer-stable": true
+}

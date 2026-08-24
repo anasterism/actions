@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ namespace }};
+
+use Asterism\Actions\Action;
+
+class {{ class }} extends Action
+{
+    protected function rules(): array
+    {
+        return [];
+    }
+
+    public function handle(): mixed
+    {
+
+    }
+}
