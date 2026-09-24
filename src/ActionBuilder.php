@@ -8,52 +8,53 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
+/**
+ * @template TBuilderReturn
+ */
 class ActionBuilder
 {
     use Conditionable;
 
+    /**
+     * @var Action<TBuilderReturn>
+     */
     protected Action $action;
-    private bool $shouldQueue = false;
     private bool $benchmark = false;
 
+    /**
+     * @param Action<TBuilderReturn> $action
+     */
     public function __construct(Action $action)
     {
         $this->action = $action;
     }
 
-    public function actingAs(Authenticatable $user): ActionBuilder
+    public function actingAs(Authenticatable $user): static
     {
         $this->action->actor = $user;
 
         return $this;
     }
 
-    public function shouldQueue(): ActionBuilder
-    {
-        $this->shouldQueue = true;
-
-        return $this;
-    }
-
-    public function enableBenchmark(): ActionBuilder
+    public function enableBenchmark(): static
     {
         $this->benchmark = true;
 
         return $this;
     }
 
-    public function execute(...$arguments): mixed
+    /**
+     * Execute the underlying action.
+     *
+     * @param mixed ...$arguments
+     * @return TBuilderReturn
+     */
+    public function execute(...$arguments)
     {
         $args = $this->prepareArguments($arguments);
         $this->action->arguments = $this->action->arguments->merge($args);
 
         $this->action->validate();
-
-        if ($this->shouldQueue) {
-            $this->action->checkAuthorization();
-            ActionJob::dispatch($this->action);
-            return true;
-        }
 
         if (!$this->shouldSkipAuthorization()) {
             $this->action->checkAuthorization();
@@ -64,6 +65,22 @@ class ActionBuilder
         }
 
         return $this->action->handle();
+    }
+
+    /**
+     * Validate and authorize the underlying action now, then run it on the queue.
+     *
+     * @param mixed ...$arguments
+     */
+    public function dispatch(...$arguments): void
+    {
+        $args = $this->prepareArguments($arguments);
+        $this->action->arguments = $this->action->arguments->merge($args);
+
+        $this->action->validate();
+        $this->action->checkAuthorization();
+
+        ActionJob::dispatch($this->action);
     }
 
     private function prepareArguments(array $arguments): array

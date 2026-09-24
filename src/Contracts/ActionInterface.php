@@ -4,5 +4,9 @@ namespace Asterism\Actions\Contracts;
 
 interface ActionInterface
 {
-    public function handle(): mixed;
+    /**
+     * Action handler
+     * @return mixed|void
+     */
+    public function handle();
 }

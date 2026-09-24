@@ -14,12 +14,13 @@ use InvalidArgumentException;
 use OutOfBoundsException;
 
 /**
- * @method static ActionBuilder when($condition, $callback)
- * @method static ActionBuilder unless($condition, $callback)
- * @method static ActionBuilder actingAs(Authenticatable $user)
- * @method static ActionBuilder shouldQueue()
- * @method static ActionBuilder enableBenchmark()
- * @method static mixed execute(mixed ...$arguments)
+ * @template TActionReturn
+ * @method static ActionBuilder<TActionReturn> when($condition, $callback)
+ * @method static ActionBuilder<TActionReturn> unless($condition, $callback)
+ * @method static ActionBuilder<TActionReturn> actingAs(Authenticatable $user)
+ * @method static ActionBuilder<TActionReturn> enableBenchmark()
+ * @method static TActionReturn execute(mixed ...$arguments)
+ * @method static void dispatch(mixed ...$arguments)
  */
 abstract class Action implements ActionInterface
 {
@@ -105,6 +106,13 @@ abstract class Action implements ActionInterface
         }
     }
 
+    /**
+     * Magic static call to bootstrap the builder fluent chain.
+     *
+     * @param string $method
+     * @param array $arguments
+     * @return ActionBuilder<TActionReturn>
+     */
     public static function __callStatic($method, $arguments)
     {
         $actionInstance = app(static::class);
@@ -116,4 +124,9 @@ abstract class Action implements ActionInterface
 
         return $builder->$method(...$arguments);
     }
+
+    /**
+     * @return TActionReturn
+     */
+    abstract public function handle();
 }

@@ -2,8 +2,12 @@
 
 namespace Asterism\Actions\Tests;
 
+use Asterism\Actions\Action;
+use Asterism\Actions\Jobs\ActionJob;
 use Asterism\Actions\Tests\Fixtures\TestAction;
 use Asterism\Actions\Tests\Fixtures\TestUser;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Queue;
 use InvalidArgumentException;
 
 class ActionTest extends TestCase
@@ -89,5 +93,66 @@ class ActionTest extends TestCase
 
         $this->assertNull($restored->actor);
         $this->assertSame('widget', $restored->arg('name'));
+    }
+
+    public function test_a_void_handler_is_supported(): void
+    {
+        $action = new class extends Action {
+            public bool $ran = false;
+
+            public function handle(): void
+            {
+                $this->ran = true;
+            }
+        };
+
+        $result = (new \Asterism\Actions\ActionBuilder($action))->execute();
+
+        $this->assertNull($result);
+        $this->assertTrue($action->ran);
+    }
+
+    public function test_dispatch_queues_the_action_with_its_arguments(): void
+    {
+        Queue::fake();
+
+        TestAction::dispatch(name: 'widget');
+
+        Queue::assertPushed(ActionJob::class, 1);
+    }
+
+    public function test_dispatch_rejects_invalid_arguments_before_queueing(): void
+    {
+        Queue::fake();
+
+        try {
+            TestAction::dispatch(name: 123);
+            $this->fail('Expected InvalidArgumentException.');
+        } catch (InvalidArgumentException) {
+            Queue::assertNothingPushed();
+        }
+    }
+
+    public function test_dispatch_checks_authorization_before_queueing(): void
+    {
+        Queue::fake();
+
+        $action = new class extends Action {
+            protected function authorize(): bool
+            {
+                return false;
+            }
+
+            public function handle(): void
+            {
+            }
+        };
+
+        try {
+            (new \Asterism\Actions\ActionBuilder($action))->dispatch();
+            $this->fail('Expected AuthorizationException.');
+        } catch (AuthorizationException) {
+            Queue::assertNothingPushed();
+        }
     }
 }
