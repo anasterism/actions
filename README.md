@@ -10,7 +10,7 @@ An action-object pattern for Laravel. Each domain operation, such as "publish a 
 ## Installation
 
 ```bash
-composer require asterism/actions
+composer require anasterism/actions
 ```
 
 ## Usage

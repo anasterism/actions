@@ -1,5 +1,5 @@
 {
-    "name": "asterism/actions",
+    "name": "anasterism/actions",
     "description": "An action-object pattern for Laravel",
     "authors": [{
         "name": "An Asterism",
@@ -10,7 +10,7 @@
         "laravel",
         "actions"
     ],
-    "license": "proprietary",
+    "license": "MIT",
     "require": {
         "php": "^8.2",
         "illuminate/auth": "^9.0|^10.0|^11.0|^12.0|^13.0",
