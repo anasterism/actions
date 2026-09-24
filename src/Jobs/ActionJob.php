@@ -16,7 +16,6 @@ class ActionJob implements ShouldQueue
     /**
      * Create a new job instance.
      *
-     * @param Action<mixed> $action
      * @return void
      */
     public function __construct(protected Action $action)

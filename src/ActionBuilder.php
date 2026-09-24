@@ -8,22 +8,13 @@ use Illuminate\Support\Traits\Conditionable;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
-/**
- * @template TBuilderReturn
- */
 class ActionBuilder
 {
     use Conditionable;
 
-    /**
-     * @var Action<TBuilderReturn>
-     */
     protected Action $action;
     private bool $benchmark = false;
 
-    /**
-     * @param Action<TBuilderReturn> $action
-     */
     public function __construct(Action $action)
     {
         $this->action = $action;
@@ -47,9 +38,8 @@ class ActionBuilder
      * Execute the underlying action.
      *
      * @param mixed ...$arguments
-     * @return TBuilderReturn
      */
-    public function execute(...$arguments)
+    public function execute(...$arguments): mixed
     {
         $args = $this->prepareArguments($arguments);
         $this->action->arguments = $this->action->arguments->merge($args);

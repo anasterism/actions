@@ -14,22 +14,12 @@ use InvalidArgumentException;
 use OutOfBoundsException;
 
 /**
- * Plain @method tags are for IDEs such as PhpStorm, which don't resolve class templates in @method.
- * The @phpstan-method tags give PHPStan the Action's real return type via TActionReturn.
- *
- * @template TActionReturn
- *
  * @method static ActionBuilder when($condition, $callback)
  * @method static ActionBuilder unless($condition, $callback)
  * @method static ActionBuilder actingAs(Authenticatable $user)
  * @method static ActionBuilder enableBenchmark()
  * @method static mixed execute(mixed ...$arguments)
  * @method static void dispatch(mixed ...$arguments)
- * @phpstan-method static ActionBuilder<TActionReturn> when($condition, $callback)
- * @phpstan-method static ActionBuilder<TActionReturn> unless($condition, $callback)
- * @phpstan-method static ActionBuilder<TActionReturn> actingAs(Authenticatable $user)
- * @phpstan-method static ActionBuilder<TActionReturn> enableBenchmark()
- * @phpstan-method static TActionReturn execute(mixed ...$arguments)
  */
 abstract class Action implements ActionInterface
 {
@@ -120,7 +110,7 @@ abstract class Action implements ActionInterface
      *
      * @param string $method
      * @param array $arguments
-     * @return ActionBuilder<TActionReturn>
+     * @return mixed
      */
     public static function __callStatic($method, $arguments)
     {
@@ -134,8 +124,4 @@ abstract class Action implements ActionInterface
         return $builder->$method(...$arguments);
     }
 
-    /**
-     * @return TActionReturn
-     */
-    abstract public function handle();
 }
