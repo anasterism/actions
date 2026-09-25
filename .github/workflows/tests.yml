@@ -23,18 +23,23 @@ jobs:
           - php: '8.2'
             laravel: '9.*'
             testbench: '7.*'
+            allow-advisories: true
           - php: '8.2'
             laravel: '10.*'
             testbench: '8.*'
+            allow-advisories: true
           - php: '8.3'
             laravel: '10.*'
             testbench: '8.*'
+            allow-advisories: true
           - php: '8.2'
             laravel: '11.*'
             testbench: '9.*'
+            allow-advisories: true
           - php: '8.3'
             laravel: '11.*'
             testbench: '9.*'
+            allow-advisories: true
           - php: '8.2'
             laravel: '12.*'
             testbench: '10.*'
@@ -61,6 +66,12 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, intl
           coverage: none
+
+      # Every release of these end-of-life Laravel versions has unpatched security advisories,
+      # which Composer refuses to install by default. They're still supported, so allow them here only.
+      - name: Allow advisories for end-of-life Laravel versions
+        if: matrix.allow-advisories
+        run: composer config policy.advisories.block false
 
       - name: Install dependencies
         run: |
