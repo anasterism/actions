@@ -75,8 +75,9 @@ class ActionBuilder
 
     private function prepareArguments(array $arguments): array
     {
-        $flattenedArgs = reset($arguments);
-        $arguments     = count($arguments) === 1 && is_array($flattenedArgs) ? $flattenedArgs : $arguments;
+        if (count($arguments) === 1 && array_key_first($arguments) === 0 && is_array($arguments[0])) {
+            $arguments = $arguments[0];
+        }
 
         if (!empty($arguments) && array_is_list($arguments)) {
             throw new InvalidArgumentException('Action arguments must be passed as named arguments or an associative array');

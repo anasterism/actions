@@ -181,4 +181,42 @@ class ActionTest extends TestCase
         $response->assertUnprocessable();
         Queue::assertNothingPushed();
     }
+
+    public function test_a_named_list_argument_is_passed_through_intact(): void
+    {
+        $result = (new \Asterism\Actions\ActionBuilder($this->argumentsEchoingAction()))->execute(tags: ['a', 'b', 'c']);
+
+        $this->assertSame(['tags' => ['a', 'b', 'c']], $result);
+    }
+
+    public function test_a_named_associative_array_argument_is_passed_through_intact(): void
+    {
+        $result = (new \Asterism\Actions\ActionBuilder($this->argumentsEchoingAction()))->execute(options: ['limit' => 5, 'sort' => 'name']);
+
+        $this->assertSame(['options' => ['limit' => 5, 'sort' => 'name']], $result);
+    }
+
+    public function test_a_single_associative_array_is_still_treated_as_the_arguments(): void
+    {
+        $result = (new \Asterism\Actions\ActionBuilder($this->argumentsEchoingAction()))->execute(['tags' => ['a', 'b'], 'name' => 'x']);
+
+        $this->assertSame(['tags' => ['a', 'b'], 'name' => 'x'], $result);
+    }
+
+    public function test_a_single_positional_list_still_throws(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        (new \Asterism\Actions\ActionBuilder($this->argumentsEchoingAction()))->execute(['a', 'b']);
+    }
+
+    private function argumentsEchoingAction(): Action
+    {
+        return new class extends Action {
+            public function handle(): array
+            {
+                return $this->arguments()->all();
+            }
+        };
+    }
 }
