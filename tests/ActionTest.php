@@ -165,7 +165,7 @@ class ActionTest extends TestCase
         $response = $this->postJson('/actions-test', ['name' => 123]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['name' => 'The name field must be a string.']);
+            ->assertJsonValidationErrors(['name' => 'must be a string.']); // Laravel 9 omits "field" from its messages
     }
 
     public function test_invalid_arguments_to_dispatch_in_an_http_request_respond_422(): void
@@ -255,7 +255,7 @@ class ActionTest extends TestCase
         };
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The tags.1 argument must not be greater than 1 characters.');
+        $this->expectExceptionMessageMatches('/tags\.1 (argument )?must not be greater than 1 characters/');
 
         (new \Asterism\Actions\ActionBuilder($action))->execute(tags: collect(['a', 'bb']));
     }
