@@ -9,6 +9,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Queue\SerializesAndRestoresModelIdentifiers;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Enumerable;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
 use OutOfBoundsException;
@@ -92,7 +93,11 @@ abstract class Action implements ActionInterface
 
     public function validate(): void
     {
-        $validator = Validator::make($this->arguments->toArray(), $this->rules(), $this->messages());
+        $args = $this->arguments
+            ->map(fn ($value) => $value instanceof Enumerable ? $value->toArray() : $value)
+            ->all();
+
+        $validator = Validator::make($args, $this->rules(), $this->messages());
 
         if ($validator->fails()) {
             $ex = new ActionValidationException($validator);

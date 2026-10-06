@@ -6,6 +6,7 @@ use Asterism\Actions\Action;
 use Asterism\Actions\Jobs\ActionJob;
 use Asterism\Actions\Tests\Fixtures\TestAction;
 use Asterism\Actions\Tests\Fixtures\TestUser;
+use Asterism\Actions\Validation\Rules\TypeOf;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Route;
@@ -164,7 +165,7 @@ class ActionTest extends TestCase
         $response = $this->postJson('/actions-test', ['name' => 123]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['name' => 'The name field must be a string.']);
+            ->assertJsonValidationErrors(['name' => 'must be a string.']); // Laravel 9 omits "field" from its messages
     }
 
     public function test_invalid_arguments_to_dispatch_in_an_http_request_respond_422(): void
@@ -218,5 +219,63 @@ class ActionTest extends TestCase
                 return $this->arguments()->all();
             }
         };
+    }
+
+    public function test_a_model_argument_passes_type_of_validation(): void
+    {
+        $user = TestUser::create(['name' => 'Ada Lovelace', 'email' => 'ada@example.com', 'password' => 'secret']);
+        $action = new class extends Action {
+            protected function rules(): array
+            {
+                return ['user' => ['required', new TypeOf(TestUser::class)]];
+            }
+
+            public function handle(): TestUser
+            {
+                return $this->arg('user');
+            }
+        };
+
+        $result = (new \Asterism\Actions\ActionBuilder($action))->execute(user: $user);
+
+        $this->assertTrue($result->is($user));
+    }
+
+    public function test_nested_rules_still_apply_to_a_collection_argument(): void
+    {
+        $action = new class extends Action {
+            protected function rules(): array
+            {
+                return ['tags' => ['array'], 'tags.*' => ['string', 'max:1']];
+            }
+
+            public function handle(): void
+            {
+            }
+        };
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/tags\.1 (argument )?must not be greater than 1 characters/');
+
+        (new \Asterism\Actions\ActionBuilder($action))->execute(tags: collect(['a', 'bb']));
+    }
+
+    public function test_a_valid_collection_argument_passes_array_rules(): void
+    {
+        $action = new class extends Action {
+            protected function rules(): array
+            {
+                return ['tags' => ['array'], 'tags.*' => ['string', 'max:1']];
+            }
+
+            public function handle(): array
+            {
+                return $this->arg('tags')->all();
+            }
+        };
+
+        $result = (new \Asterism\Actions\ActionBuilder($action))->execute(tags: collect(['a', 'b']));
+
+        $this->assertSame(['a', 'b'], $result);
     }
 }
