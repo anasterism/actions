@@ -79,7 +79,7 @@ class PublishPost extends Action
 }
 ```
 
-Actions are context-aware. In HTTP contexts, a `ValidationException` is thrown with proper HTTP response. In console contexts, a `InvalidArgumentException` is thrown.
+Actions are context-aware. In HTTP contexts, including HTTP requests made by tests, a `ValidationException` is thrown and rendered as a 422 response. Everywhere else, such as artisan commands, queue workers and direct calls in tests, an `InvalidArgumentException` is thrown with a summary of the errors.
 
 ### The `TypeOf` rule
 
