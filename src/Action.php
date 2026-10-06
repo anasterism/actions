@@ -97,11 +97,11 @@ abstract class Action implements ActionInterface
         if ($validator->fails()) {
             $ex = new ActionValidationException($validator);
 
-            if (app()->runningInConsole() || app()->runningUnitTests()) {
-                throw new InvalidArgumentException($ex->summary(), 0);
-            } else {
+            if (app()->bound('request') && request()->route() !== null) {
                 throw $ex;
             }
+
+            throw new InvalidArgumentException($ex->summary(), 0);
         }
     }
 

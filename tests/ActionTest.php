@@ -8,6 +8,7 @@ use Asterism\Actions\Tests\Fixtures\TestAction;
 use Asterism\Actions\Tests\Fixtures\TestUser;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Route;
 use InvalidArgumentException;
 
 class ActionTest extends TestCase
@@ -154,6 +155,31 @@ class ActionTest extends TestCase
         } catch (AuthorizationException) {
             Queue::assertNothingPushed();
         }
+    }
+
+    public function test_invalid_arguments_in_an_http_request_respond_422(): void
+    {
+        Route::post('/actions-test', fn () => TestAction::execute(name: request('name')));
+
+        $response = $this->postJson('/actions-test', ['name' => 123]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['name' => 'The name field must be a string.']);
+    }
+
+    public function test_invalid_arguments_to_dispatch_in_an_http_request_respond_422(): void
+    {
+        Queue::fake();
+        Route::post('/actions-test', function () {
+            TestAction::dispatch(name: request('name'));
+
+            return response()->noContent(202);
+        });
+
+        $response = $this->postJson('/actions-test', ['name' => 123]);
+
+        $response->assertUnprocessable();
+        Queue::assertNothingPushed();
     }
 
     public function test_a_named_list_argument_is_passed_through_intact(): void
